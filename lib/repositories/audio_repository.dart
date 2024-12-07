@@ -1,48 +1,33 @@
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 
 class AudioRepository {
-  final AudioPlayer audioPlayer = AudioPlayer();
-  String? _audioUrl;
-  late AudioWaveforms _audioWaveforms;
-
-  // Method to play the audio directly from the URL (streaming)
-  Future<void> playAudio(String audioUrl) async {
+  String? path;
+  // Method to download the audio file and store it locally
+  Future<String> loadAudio(String audioUrl) async {
     try {
-      // Save the URL to be used later for pause/resume
-      _audioUrl = audioUrl;
+      final fileName = basename(audioUrl).replaceAll('%20', ' ');
+      final dir = await getApplicationDocumentsDirectory();
+      path = '${dir.path}/$fileName';
 
-      // Set the URL to stream the audio
-      await audioPlayer.setUrl(audioUrl);
-      // Start playing the audio
-      audioPlayer.play();
+      // Check if the file exists locally
+      final fileExists = await File(path!).exists();
+      if (!fileExists) {
+        final response = await http.get(Uri.parse(audioUrl));
+
+        if (response.statusCode == 200) {
+          final file = File(path!);
+          await file.writeAsBytes(response.bodyBytes);
+        } else {
+          throw Exception('Failed to download audio');
+        }
+      }
+      return path!;
     } catch (e) {
-      throw Exception('Error playing audio: $e');
+      throw Exception('Error downloading audio: $e');
     }
-  }
-
-  // Method to pause the audio
-  Future<void> pauseAudio() async {
-    try {
-      await audioPlayer.pause();
-    } catch (e) {
-      throw Exception('Error pausing audio: $e');
-    }
-  }
-
-  // Method to stop the audio
-  Future<void> stopAudio() async {
-    try {
-      await audioPlayer.stop();
-    } catch (e) {
-      throw Exception('Error stopping audio: $e');
-    }
-  }
-
-  // Dispose the player to release resources
-  void dispose() {
-    audioPlayer.dispose();
   }
 }

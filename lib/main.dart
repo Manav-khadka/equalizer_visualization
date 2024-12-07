@@ -1,10 +1,10 @@
-import 'package:equalizer_visualization/bloc/audioplayer_bloc.dart';
+import 'package:equalizer_visualization/bloc/audio_player_bloc.dart';
 import 'package:equalizer_visualization/ui/screens/home_screen.dart';
 import 'package:equalizer_visualization/utils/dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
